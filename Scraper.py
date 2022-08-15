@@ -907,4 +907,4 @@ def login_oddsportal(username_data, password_data):
 
 
 
-scrape_football_seasons("england", "premier-league", 0, "2018-2019", 0, "test_22_23.csv", "yes", "yes", "karolmico", ".PpHRXa97An6HUw")
+scrape_football_seasons("england", "premier-league", 0, "2018-2019", 0, "test_22_23.csv", "yes", "yes", "Username", "Password")
