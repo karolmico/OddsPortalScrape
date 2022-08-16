@@ -13,6 +13,8 @@ from selenium.common.exceptions import WebDriverException
 import pandas as pd
 import csv
 
+from passwords import *
+
 # AdBlock extension for chrome
 path_to_extension = r'E:\Python\OddsPortalScrape\1.43.0_0'
 
@@ -327,7 +329,7 @@ def scrape_football_seasons(country = "england", league = "premier-league", nsea
     if (actual_season == "yes"):
         scrape_football_actual_season(country, league, pages, file_name, id_counter)
     if (next_matches == "yes"):
-        scrape_football_next_matches(country, league, file_name, id_counter)
+        scrape_football_next_matches(country, league, file_name, id_counter, only = "no")
 
 def scrape_football_actual_season(country = "england", league = "premier-league", pages = 8, file_name = "premier_league_scrape.csv", id_counter = 0):
     # Creating web link
@@ -607,9 +609,12 @@ def scrape_football_actual_season(country = "england", league = "premier-league"
     save_csv(file_name)
 
 
-def scrape_football_next_matches(country = "england", league = "premier-league", file_name = "premier_league_scrape.csv", id_counter = 0):
+def scrape_football_next_matches(country = "england", league = "premier-league", file_name = "premier_league_scrape.csv", id_counter = 0, only = "no", username_data = "", password_data = ""):
     # Creating web link
     driver.get(f'https://www.oddsportal.com/soccer/{country}/{league}/'.format(country=country, league=league))
+    if (only == "yes"):
+        # Login to odssportal
+        login_oddsportal(username_data, password_data)
     SEASON1 = ""
     xBet_t = 0
     bet_at_home_t = 0
@@ -660,6 +665,7 @@ def scrape_football_next_matches(country = "england", league = "premier-league",
                                         '//*[@id="odds-data-table"]/div[1]/table/tbody/tr[%d]/td[1]/div/a[2]' % m):
                     test_value = driver.find_element(By.XPATH,
                                                      '//*[@id="odds-data-table"]/div[1]/table/tbody/tr[%d]/td[1]/div/a[2]' % m).text
+                    driver.execute_cdp_cmd('Emulation.setScriptExecutionDisabled', {'value': True})
                     if (test_value == "1xBet"):
                         xBet_H_t = driver.find_element(By.XPATH,
                                                        '//*[@id="odds-data-table"]/div[1]/table/tbody/tr[%d]/td[2]' % m)
@@ -870,6 +876,7 @@ def scrape_football_next_matches(country = "england", league = "premier-league",
             if (back_control == 1):
                 driver.back()
                 back_control = 0
+                driver.execute_cdp_cmd('Emulation.setScriptExecutionDisabled', {'value': False})
 
     # save data to csv
     save_csv(file_name)
@@ -902,9 +909,14 @@ def login_oddsportal(username_data, password_data):
 
         password.clear()
         password.send_keys(password_data)
+        if (driver.find_elements(By.XPATH, '//*[@id="col-content"]/div[3]/div/form/div[3]/button/span/span')):
+            login_button2 = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="col-content"]/div[3]/div/form/div[3]/button/span/span[contains(text(), "Login")]'))).click()
+        if (driver.find_elements(By.XPATH, '//*[@id="col-content"]/div[2]/div/form/div[3]/button/span/span')):
+            login_button2 = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,
+                                                                                        '//*[@id="col-content"]/div[2]/div/form/div[3]/button/span/span[contains(text(), "Login")]'))).click()
 
-        login_button2 = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="col-content"]/div[2]/div/form/div[3]/button/span/span[contains(text(), "Login")]'))).click()
 
 
+#scrape_football_seasons(country = "england", league = "premier-league", nseasons = 5, start_season = "2017-2018", pages = 8, file_name = "premier_league_scrape.csv", actual_season = "yes", next_matches = "yes", username_data = "karolmico", password_data = ".PpHRXa97An6HUw")
 
-scrape_football_seasons("england", "premier-league", 0, "2018-2019", 0, "test_22_23.csv", "yes", "yes", "karolmico", ".PpHRXa97An6HUw")
+scrape_football_next_matches(country = "england", league = "premier-league", file_name = "premier_league_scrape.csv", id_counter = 0, only = "yes", username_data = username_data_ff, password_data = password_data_ff)
